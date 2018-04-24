@@ -15,8 +15,8 @@ from tensorboard_logger import configure, log_value
 import config
 
 use_cuda = torch.cuda.is_available()
-OUTPATH = './checkpoint/checkpoint_base'
-configure("runs/run-base", flush_secs=5)
+OUTPATH = './checkpoint/checkpoint_se'
+configure("runs/run-se", flush_secs=5)
 BATCH, EPOCH = config.BATCH, config.EPOCH
 
 # Training dataset
