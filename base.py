@@ -54,7 +54,7 @@ def train(epoch):
         optimizer.step()
         if batch_idx % 10 == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(data), len(train_loader.dataset), 100. * batch_idx / len(train_loader), loss.data[0]))
-            log_value('loss', loss, batch_idx)
+            log_value('loss', loss, 50000*(epoch-1) + batch_idx)
 
     if epoch % 10 == 0:
         torch.save(model.state_dict(), OUTPATH + str(epoch))
@@ -84,6 +84,6 @@ def test():
           .format(test_loss, correct, len(test_loader.dataset),
                   100. * correct / len(test_loader.dataset)))
 
-for epoch in range(1, 20+1):
+for epoch in range(1, 200+1):
     train(epoch)
     test()
