@@ -13,32 +13,36 @@ import numpy as np
 #import models.resnet
 import models.resnet_STN
 from tensorboard_logger import configure, log_value
+import config
 
 use_cuda = torch.cuda.is_available()
 OUTPATH = './checkpoint/checkpoint_STN'
 configure("runs/run-STN", flush_secs=5)
+BATCH, EPOCH = config.BATCH, config.EPOCH
 
 # Training dataset
 train_loader = torch.utils.data.DataLoader(
         datasets.CIFAR100(root='.', train=True, download=True,
             transform=transforms.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize((0.1307,), (0.3081,))
-            ])), batch_size=64, shuffle=True, num_workers=4)
+		transforms.RandomCrop(32, padding=4),
+		transforms.RandomHorizontalFlip(),
+		transforms.ToTensor(),
+		transforms.Normalize((0.5071,0.4867,0.4408),(0.2675,0.2565,0.2761)),
+            ])), batch_size=BATCH, shuffle=True, num_workers=4)
 
 # Test dataset
 test_loader = torch.utils.data.DataLoader(
         datasets.CIFAR100(root='.', train=False, transform=transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize((0.1307,), (0.3081,))
-        ])), batch_size=64, shuffle=True, num_workers=4)
+            transforms.Normalize((0.5071,0.4867,0.4408), (0.2675,0.2565,0.2761))
+        ])), batch_size=BATCH, shuffle=True, num_workers=4)
 
 #model = Net()
 model = models.resnet_STN.resnet50(num_classes=100)
 if use_cuda:
     model.cuda()
 
-optimizer = optim.SGD(model.parameters(), lr=0.01)
+optimizer = optim.SGD(model.parameters(), lr=0.1)
 criterion = nn.CrossEntropyLoss()
 
 def train(epoch):
@@ -85,6 +89,6 @@ def test():
           .format(test_loss, correct, len(test_loader.dataset),
                   100. * correct / len(test_loader.dataset)))
 
-for epoch in range(1, 200+1):
+for epoch in range(1, EPOCH+1):
     train(epoch)
     test()

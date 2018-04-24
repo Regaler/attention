@@ -17,8 +17,7 @@ import config
 use_cuda = torch.cuda.is_available()
 OUTPATH = './checkpoint/checkpoint_base'
 configure("runs/run-base", flush_secs=5)
-EPOCH = config.EPOCH
-BATCH = config.BATCH
+BATCH, EPOCH = config.BATCH, config.EPOCH
 
 # Training dataset
 train_loader = torch.utils.data.DataLoader(
@@ -38,11 +37,11 @@ test_loader = torch.utils.data.DataLoader(
         ])), batch_size=BATCH, shuffle=True, num_workers=4)
 
 #model = Net()
-model = models.resnet.resnet50(num_classes=100)
+model = models.se_resnet.resnet50(num_classes=100)
 if use_cuda:
     model.cuda()
 
-optimizer = optim.SGD(model.parameters(), lr=config.learning_rate(0.1, 200), momentum=0.9, weight_decay=5e-4)
+optimizer = optim.SGD(model.parameters(), lr=0.1)
 criterion = nn.CrossEntropyLoss()
 
 def train(epoch):
