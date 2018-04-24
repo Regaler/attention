@@ -10,7 +10,7 @@ import torchvision
 from torchvision import datasets, transforms
 from torch.autograd import Variable
 import numpy as np
-import resnet
+import models.resnet
 from tensorboard_logger import configure, log_value
 
 use_cuda = torch.cuda.is_available()
@@ -21,23 +21,25 @@ configure("runs/run-base", flush_secs=5)
 train_loader = torch.utils.data.DataLoader(
         datasets.CIFAR100(root='.', train=True, download=True,
             transform=transforms.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize((0.1307,), (0.3081,))
-            ])), batch_size=64, shuffle=True, num_workers=4)
+		transforms.RandomCrop(32, padding=4),
+		transforms.RandomHorizontalFlip(),
+		transforms.ToTensor(),
+		transforms.Normalize((0.5071,0.4867,0.4408),(0.2675,0.2565,0.2761)),
+            ])), batch_size=128, shuffle=True, num_workers=4)
 
 # Test dataset
 test_loader = torch.utils.data.DataLoader(
         datasets.CIFAR100(root='.', train=False, transform=transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize((0.1307,), (0.3081,))
-        ])), batch_size=64, shuffle=True, num_workers=4)
+            transforms.Normalize((0.5071,0.4867,0.4408), (0.2675,0.2565,0.2761))
+        ])), batch_size=128, shuffle=True, num_workers=4)
 
 #model = Net()
-model = resnet.resnet50(num_classes=100)
+model = models.resnet.resnet50(num_classes=100)
 if use_cuda:
     model.cuda()
 
-optimizer = optim.SGD(model.parameters(), lr=0.01)
+optimizer = optim.SGD(model.parameters(), lr=0.1)
 criterion = nn.CrossEntropyLoss()
 
 def train(epoch):
