@@ -11,9 +11,11 @@ from torchvision import datasets, transforms
 from torch.autograd import Variable
 import numpy as np
 import resnet
+from tensorboard_logger import configure, log_value
 
 use_cuda = torch.cuda.is_available()
 OUTPATH = './checkpoint/checkpoint_base'
+configure("runs/run-base", flush_secs=5)
 
 # Training dataset
 train_loader = torch.utils.data.DataLoader(
@@ -52,6 +54,7 @@ def train(epoch):
         optimizer.step()
         if batch_idx % 10 == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(data), len(train_loader.dataset), 100. * batch_idx / len(train_loader), loss.data[0]))
+            log_value('loss', loss, batch_idx)
 
     if epoch % 10 == 0:
         torch.save(model.state_dict(), OUTPATH + str(epoch))
