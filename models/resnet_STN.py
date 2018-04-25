@@ -113,7 +113,7 @@ class ResNet(nn.Module):
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
         # Spatial transformer localization-network
-        self.localization = nn.Sequential(
+        self.localization1 = nn.Sequential(
             nn.Conv2d(3, 8, kernel_size=7),
             nn.MaxPool2d(2, stride=2),
             nn.ReLU(True),
@@ -123,15 +123,54 @@ class ResNet(nn.Module):
         )
 
         # Regressor for the 3 * 2 affine matrix
-        self.fc_loc = nn.Sequential(
+        self.fc_loc1 = nn.Sequential(
+            nn.Linear(10 * 4 * 4, 32),
+            nn.ReLU(True),
+            nn.Linear(32, 3*2)
+        )
+
+        # Spatial transformer localization-network
+        self.localization2 = nn.Sequential(
+            nn.Conv2d(3, 8, kernel_size=7),
+            nn.MaxPool2d(2, stride=2),
+            nn.ReLU(True),
+            nn.Conv2d(8, 10, kernel_size=5),
+            nn.MaxPool2d(2, stride=2),
+            nn.ReLU(True)
+        )
+
+        # Regressor for the 3 * 2 affine matrix
+        self.fc_loc2 = nn.Sequential(
+            nn.Linear(10 * 4 * 4, 32),
+            nn.ReLU(True),
+            nn.Linear(32, 3*2)
+        )
+
+        # Spatial transformer localization-network
+        self.localization3 = nn.Sequential(
+            nn.Conv2d(3, 8, kernel_size=7),
+            nn.MaxPool2d(2, stride=2),
+            nn.ReLU(True),
+            nn.Conv2d(8, 10, kernel_size=5),
+            nn.MaxPool2d(2, stride=2),
+            nn.ReLU(True)
+        )
+
+        # Regressor for the 3 * 2 affine matrix
+        self.fc_loc3 = nn.Sequential(
             nn.Linear(10 * 4 * 4, 32),
             nn.ReLU(True),
             nn.Linear(32, 3*2)
         )
 
         # Initialize the weights/bias with identity transformation
-        self.fc_loc[2].weight.data.fill_(0)
-        self.fc_loc[2].bias.data = torch.FloatTensor([1, 0, 0, 0, 1, 0])
+        self.fc_loc1[2].weight.data.fill_(0)
+        self.fc_loc1[2].bias.data = torch.FloatTensor([1, 0, 0, 0, 1, 0])
+        self.fc_loc2[2].weight.data.fill_(0)
+        self.fc_loc2[2].bias.data = torch.FloatTensor([1, 0, 0, 0, 1, 0])
+        self.fc_loc3[2].weight.data.fill_(0)
+        self.fc_loc3[2].bias.data = torch.FloatTensor([1, 0, 0, 0, 1, 0])
+
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -142,10 +181,22 @@ class ResNet(nn.Module):
                 m.bias.data.zero_()
 
     # Spatial transformer network forward function
-    def stn(self, x):
-        xs = self.localization(x)
+    def stn(self, x, i):
+        if i == 1:
+            localization = self.localization1
+            fc_loc = self.fc_loc1
+        elif i == 2:
+            localization = self.localization2
+            fc_loc = self.fc_loc2
+        elif i == 3:
+            localization = self.localization3
+            fc_loc = self.fc_loc3
+        else:
+            print("stn: ERROR")
+
+        xs = localization(x)
         xs = xs.view(-1, 10 * 4 * 4)
-        theta = self.fc_loc(xs)
+        theta = fc_loc(xs)
         theta = theta.view(-1, 2, 3)
 
         grid = F.affine_grid(theta, x.size())
@@ -179,10 +230,16 @@ class ResNet(nn.Module):
         #x = self.maxpool(x)
 
         x = self.layer1(x)
+        print("After layer1 x.shape: " + str(x.shape))
+        #x = self.stn(x, 1)
         x = self.layer2(x)
+        print("After layer2 x.shape: " + str(x.shape))
+        #x = self.stn(x, 2)
         x = self.layer3(x)
+        print("After layer3 x.shape: " + str(x.shape))
+        #x = self.stn(x, 3)
         x = self.layer4(x)
-
+        print("After layer4 x.shape: " + str(x.shape))
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
         x = self.fc(x)

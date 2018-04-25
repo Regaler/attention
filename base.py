@@ -65,7 +65,7 @@ def train(epoch):
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(data), len(train_loader.dataset), 100. * batch_idx / len(train_loader), loss.data[0]))
             log_value('loss', loss, 391*(epoch-1) + batch_idx)
 
-    if epoch % 1 == 0:
+    if epoch % 20 == 0:
         if torch.cuda.device_count() > 1:
             torch.save(model.module.state_dict(), OUTPATH + str(epoch))
 
@@ -89,10 +89,10 @@ def test():
         pred = output.data.max(1, keepdim=True)[1]
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
-    test_loss /= len(test_loader.dataset)
+    test_loss = test_loss / (len(test_loader.dataset) // BATCH)
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(test_loss, correct, len(test_loader.dataset), 100. * correct / len(test_loader.dataset)))
     log_value('test_loss', test_loss, epoch)
-    log_value('tett_acc', 100. * correct / len(test_loader.dataset), epoch)
+    log_value('test_acc', 100. * correct / len(test_loader.dataset), epoch)
 
 
 for epoch in range(1, EPOCH+1):

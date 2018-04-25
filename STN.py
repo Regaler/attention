@@ -94,7 +94,7 @@ def test():
     test_loss /= len(test_loader.dataset)
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(test_loss, correct, len(test_loader.dataset), 100. * correct / len(test_loader.dataset)))
     log_value('test_loss', test_loss, epoch)
-    log_value('tett_acc', 100. * correct / len(test_loader.dataset), epoch)
+    log_value('test_acc', 100. * correct / len(test_loader.dataset), epoch)
 
 
 for epoch in range(1, EPOCH+1):
