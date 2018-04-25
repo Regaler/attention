@@ -1,9 +1,9 @@
 import math
 
 import torch.nn as nn
-from torchvision.models import ResNet
-from se_module import SELayer
-
+#from torchvision.models import ResNet
+from .resnet import ResNet
+from .se_module import SELayer
 
 def conv3x3(in_planes, out_planes, stride=1):
     return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False)
@@ -55,6 +55,7 @@ class SEBottleneck(nn.Module):
         self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
         self.bn3 = nn.BatchNorm2d(planes * 4)
         self.relu = nn.ReLU(inplace=True)
+        # Here is squeeze-and-excitation layer
         self.se = SELayer(planes * 4, reduction)
         self.downsample = downsample
         self.stride = stride
@@ -72,6 +73,7 @@ class SEBottleneck(nn.Module):
 
         out = self.conv3(out)
         out = self.bn3(out)
+        # Here is squeeze-and-excitation
         out = self.se(out)
 
         if self.downsample is not None:
