@@ -10,13 +10,13 @@ import torchvision
 from torchvision import datasets, transforms
 from torch.autograd import Variable
 import numpy as np
-import models.resnet
+import models.joint_resnet
 from tensorboard_logger import configure, log_value
 import config
 
 use_cuda = torch.cuda.is_available()
-OUTPATH = './checkpoint/checkpoint_base'
-configure("runs/run-base", flush_secs=5)
+OUTPATH = './checkpoint/checkpoint_joint'
+configure("runs/run-joint", flush_secs=5)
 EPOCH = config.EPOCH
 BATCH = config.BATCH
 
@@ -38,7 +38,7 @@ test_loader = torch.utils.data.DataLoader(
         ])), batch_size=BATCH, shuffle=True, num_workers=4)
 
 #model = Net()
-model = models.resnet.resnet50(num_classes=100)
+model = models.joint_resnet.resnet50(num_classes=100)
 #model.load_state_dict(torch.load("./checkpoint/checkpoint_base200"))
 
 if use_cuda:

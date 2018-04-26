@@ -84,11 +84,11 @@ class JointLayer(nn.Module):
         super(JointLayer, self).__init__()
         c = channel_in
         self.se = SELayer(channel=c, reduction=16, multiply=False)
-        self.stn = STNLayer(channel=c, multiply=False)
+        self.stn = STNLayer(channel_in=c, multiply=False)
         self.activation = nn.Hardtanh(inplace=True)
 
     def forward(self, x):
-        y = self.SELayer(multiply=False)
-        z = self.STNLayer(multiply=False)
+        y = self.se(x)
+        z = self.stn(x)
         a = self.activation(y+z) # Final joint attention map
         return x + x*a

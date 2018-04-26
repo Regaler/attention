@@ -4,7 +4,7 @@ import math
 EPOCH = 200
 BATCH = 128
 
-def learning_rate1(init, epoch):
+def learning_rate(init, epoch):
     optim_factor = 0
     if(epoch > 160):
         optim_factor = 3
@@ -15,7 +15,7 @@ def learning_rate1(init, epoch):
 
     return init*math.pow(0.2, optim_factor)
 
-def learning_rate(init, epoch):
+def learning_rate1(init, epoch):
     optim_factor = 0
     if(epoch > 170):
         optim_factor = 5
