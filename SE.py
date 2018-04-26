@@ -88,7 +88,8 @@ def test():
         pred = output.data.max(1, keepdim=True)[1]
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
-    test_loss /= len(test_loader.dataset)
+    #test_loss /= len(test_loader.dataset)
+    test_loss = test_loss / (len(test_loader.dataset) // BATCH)
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(test_loss, correct, len(test_loader.dataset), 100. * correct / len(test_loader.dataset)))
     log_value('test_loss', test_loss, epoch)
     log_value('test_acc', 100. * correct / len(test_loader.dataset), epoch)

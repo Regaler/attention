@@ -3,7 +3,7 @@ import torch.nn as nn
 import math
 import torch.utils.model_zoo as model_zoo
 import torch.nn.functional as F
-from .modules import STNLayer
+
 
 __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
            'resnet152']
@@ -112,12 +112,63 @@ class ResNet(nn.Module):
         self.avgpool = nn.AvgPool2d(4, stride=1)
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
-        # Spatial Attention Part
-        self.STN1 = STNLayer(256, True)
-        self.STN2 = STNLayer(512, True)
-        self.STN3 = STNLayer(1024, True)
+        # Spatial transformer localization-network
+        self.localization1 = nn.Sequential(
+            nn.Conv2d(256, 256, kernel_size=7),
+            nn.MaxPool2d(2, stride=2),
+            nn.ReLU(True),
+            nn.Conv2d(256, 256, kernel_size=5),
+            nn.MaxPool2d(2, stride=2),
+            nn.ReLU(True)
+        )
 
-        # Initialization
+        # Regressor for the 3 * 2 affine matrix
+        self.fc_loc1 = nn.Sequential(
+            nn.Linear(256 * 4 * 4, 32),
+            nn.ReLU(True),
+            nn.Linear(32, 3*2)
+        )
+
+        # Spatial transformer localization-network
+        self.localization2 = nn.Sequential(
+            nn.Conv2d(512, 512, kernel_size=5),
+            nn.ReLU(True),
+            nn.Conv2d(512, 512, kernel_size=5),
+            nn.ReLU(True),
+            nn.MaxPool2d(2, stride=2)
+        )
+
+        # Regressor for the 3 * 2 affine matrix
+        self.fc_loc2 = nn.Sequential(
+            nn.Linear(512 * 4 * 4, 32),
+            nn.ReLU(True),
+            nn.Linear(32, 3*2)
+        )
+
+        # Spatial transformer localization-network
+        self.localization3 = nn.Sequential(
+            nn.Conv2d(1024, 1024, kernel_size=3),
+            nn.ReLU(True),
+            nn.Conv2d(1024, 1024, kernel_size=3),
+            nn.ReLU(True),
+        )
+
+        # Regressor for the 3 * 2 affine matrix
+        self.fc_loc3 = nn.Sequential(
+            nn.Linear(1024 * 4 * 4, 32),
+            nn.ReLU(True),
+            nn.Linear(32, 3*2)
+        )
+
+        # Initialize the weights/bias with identity transformation
+        self.fc_loc1[2].weight.data.fill_(0)
+        self.fc_loc1[2].bias.data = torch.FloatTensor([1, 0, 0, 0, 1, 0])
+        self.fc_loc2[2].weight.data.fill_(0)
+        self.fc_loc2[2].bias.data = torch.FloatTensor([1, 0, 0, 0, 1, 0])
+        self.fc_loc3[2].weight.data.fill_(0)
+        self.fc_loc3[2].bias.data = torch.FloatTensor([1, 0, 0, 0, 1, 0])
+
+
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
@@ -125,6 +176,37 @@ class ResNet(nn.Module):
             elif isinstance(m, nn.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
+
+    # Spatial transformer network forward function
+    def stn(self, x, i):
+        if i == 1:
+            localization = self.localization1
+            fc_loc = self.fc_loc1
+            size = 256*4*4
+            #print("stn: 1")
+        elif i == 2:
+            localization = self.localization2
+            fc_loc = self.fc_loc2
+            size = 512*4*4
+            #print("stn: 2")
+        elif i == 3:
+            localization = self.localization3
+            fc_loc = self.fc_loc3
+            size = 1024*4*4
+            #print("stn: 3")
+        else:
+            print("stn: ERROR")
+
+        xs = localization(x)
+        xs = xs.view(-1, size)
+        theta = fc_loc(xs)
+        theta = theta.view(-1, 2, 3)
+        #print("theta.shape: " + str(theta.shape))
+        grid = F.affine_grid(theta, x.size())
+        x = F.grid_sample(x, grid)
+
+        return x
+
 
     def _make_layer(self, block, planes, blocks, stride=1):
         downsample = None
@@ -144,6 +226,7 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        #x = self.stn(x)
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -151,13 +234,13 @@ class ResNet(nn.Module):
 
         x = self.layer1(x)
         #print("After1: x.shape: " + str(x.shape))
-        x = self.STN1(x)
+        x = self.stn(x, 1)
         x = self.layer2(x)
         #print("After2: x.shape: " + str(x.shape))
-        x = self.STN2(x)
+        x = self.stn(x, 2)
         x = self.layer3(x)
         #print("After3: x.shape: " + str(x.shape))
-        x = self.STN3(x)
+        x = self.stn(x, 3)
         x = self.layer4(x)
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)

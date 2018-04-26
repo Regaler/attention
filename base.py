@@ -39,6 +39,8 @@ test_loader = torch.utils.data.DataLoader(
 
 #model = Net()
 model = models.resnet.resnet50(num_classes=100)
+model.load_state_dict(torch.load("./checkpoint/checkpoint_base200"))
+
 if use_cuda:
     model.cuda()
 if torch.cuda.device_count() > 1:
@@ -50,7 +52,9 @@ criterion = nn.CrossEntropyLoss()
 def train(epoch):
     model.train()
 
-    optimizer = optim.SGD(model.parameters(), lr=config.learning_rate(0.1, epoch), momentum=0.9, weight_decay=5e-4)
+    #optimizer = optim.SGD(model.parameters(), lr=config.learning_rate(0.1, epoch), momentum=0.9, weight_decay=5e-4)
+    optimizer = optim.SGD(model.parameters(), lr=0.1*0.0008, momentum=0.9, weight_decay=5e-4)
+
     for batch_idx, (data, target) in enumerate(train_loader):
         if use_cuda:
             data, target = data.cuda(), target.cuda()

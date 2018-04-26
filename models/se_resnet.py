@@ -3,9 +3,9 @@ import math
 import torch.nn as nn
 #from torchvision.models import ResNet
 #from .resnet import ResNet
-from .se_module import SELayer
+from .modules import SELayer
 
-### resnet code###
+### start of resnet code###
 import torch.utils.model_zoo as model_zoo
 
 __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
@@ -115,9 +115,9 @@ class ResNet(nn.Module):
         self.avgpool = nn.AvgPool2d(4, stride=1)
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
-        self.se1 = SELayer(64 * 4, 16)
-        self.se2 = SELayer(128 * 4, 16)
-        self.se3 = SELayer(256 * 4, 16)
+        self.se1 = SELayer(64 * 4, 16, True)
+        self.se2 = SELayer(128 * 4, 16, True)
+        self.se3 = SELayer(256 * 4, 16, True)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -164,7 +164,7 @@ class ResNet(nn.Module):
 
         return x
 
-### resnet code###
+### end of resnet code###
 
 def conv3x3(in_planes, out_planes, stride=1):
     return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False)
@@ -180,7 +180,7 @@ class SEBasicBlock(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.conv2 = conv3x3(planes, planes, 1)
         self.bn2 = nn.BatchNorm2d(planes)
-        self.se = SELayer(planes, reduction)
+        self.se = SELayer(planes, reduction, True)
         self.downsample = downsample
         self.stride = stride
 
@@ -217,7 +217,7 @@ class SEBottleneck(nn.Module):
         self.bn3 = nn.BatchNorm2d(planes * 4)
         self.relu = nn.ReLU(inplace=True)
         # Here is squeeze-and-excitation layer
-        self.se = SELayer(planes * 4, reduction)
+        self.se = SELayer(planes * 4, reduction, True)
         self.downsample = downsample
         self.stride = stride
 
@@ -304,7 +304,7 @@ class CifarSEBasicBlock(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.conv2 = conv3x3(planes, planes)
         self.bn2 = nn.BatchNorm2d(planes)
-        self.se = SELayer(planes, reduction)
+        self.se = SELayer(planes, reduction, True)
         if inplanes != planes:
             self.downsample = nn.Sequential(nn.Conv2d(inplanes, planes, kernel_size=1, stride=stride, bias=False),
                                             nn.BatchNorm2d(planes))
