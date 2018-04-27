@@ -86,11 +86,11 @@ def test():
     for data, target in test_loader:
         if use_cuda:
             data, target = data.cuda(), target.cuda()
-        data, target = Variable(data, volatile=True), Variable(target)
+        data, target = Variable(data, requires_grad=False), Variable(target)
         output = model(data)
 
         # sum up batch loss
-        test_loss += criterion(output, target).data[0]
+        test_loss += criterion(output, target).item()
         # get the index of the max log-probability
         pred = output.data.max(1, keepdim=True)[1]
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
@@ -107,11 +107,11 @@ def get_train_acc():
     for data, target in train_loader:
         if use_cuda:
             data, target = data.cuda(), target.cuda()
-        data, target = Variable(data, volatile=True), Variable(target)
+        data, target = Variable(data, requires_grad=False), Variable(target)
         output = model(data)
 
         # sum up batch loss
-        train_loss += criterion(output, target).data[0]
+        train_loss += criterion(output, target).item()
         # get the index of the max log-probability
         pred = output.data.max(1, keepdim=True)[1]
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()

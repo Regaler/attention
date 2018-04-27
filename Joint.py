@@ -47,7 +47,6 @@ if use_cuda:
 if torch.cuda.device_count() > 1:
     model = nn.DataParallel(model)
 
-#optimizer = optim.Adam(model.parameters(), lr=0.01, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
 criterion = nn.CrossEntropyLoss()
 
 def train(epoch):
@@ -85,11 +84,11 @@ def test():
     for data, target in test_loader:
         if use_cuda:
             data, target = data.cuda(), target.cuda()
-        data, target = Variable(data, volatile=True), Variable(target)
+        data, target = Variable(data, requires_grad=False), Variable(target)
         output = model(data)
 
         # sum up batch loss
-        test_loss += criterion(output, target).data[0]
+        test_loss += criterion(output, target).item()
         # get the index of the max log-probability
         pred = output.data.max(1, keepdim=True)[1]
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
@@ -106,11 +105,11 @@ def get_train_acc():
     for data, target in train_loader:
         if use_cuda:
             data, target = data.cuda(), target.cuda()
-        data, target = Variable(data, volatile=True), Variable(target)
+        data, target = Variable(data, requires_grad=False), Variable(target)
         output = model(data)
 
         # sum up batch loss
-        train_loss += criterion(output, target).data[0]
+        train_loss += criterion(output, target).item()
         # get the index of the max log-probability
         pred = output.data.max(1, keepdim=True)[1]
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()

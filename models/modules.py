@@ -85,7 +85,8 @@ class JointLayer(nn.Module):
         c = channel_in
         self.se = SELayer(channel=c, reduction=16, multiply=False)
         self.stn = STNLayer(channel_in=c, multiply=False)
-        self.activation = nn.Hardtanh(inplace=True)
+        #self.activation = nn.Hardtanh(inplace=True)
+        self.activation = nn.ReLU(True)
 
     def forward(self, x):
         y = self.se(x)
