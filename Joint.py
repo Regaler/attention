@@ -39,7 +39,8 @@ test_loader = torch.utils.data.DataLoader(
 
 #model = Net()
 model = models.joint_resnet.resnet50(num_classes=100)
-#model.load_state_dict(torch.load("./checkpoint/checkpoint_base200"))
+pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+print("Joint: # of params: " + str(pytorch_total_params))
 
 if use_cuda:
     model.cuda()
@@ -98,7 +99,28 @@ def test():
     log_value('test_loss', test_loss, epoch)
     log_value('test_acc', 100. * correct / len(test_loader.dataset), epoch)
 
+def get_train_acc():
+    model.eval()
+    train_loss = 0
+    correct = 0
+    for data, target in train_loader:
+        if use_cuda:
+            data, target = data.cuda(), target.cuda()
+        data, target = Variable(data, volatile=True), Variable(target)
+        output = model(data)
+
+        # sum up batch loss
+        train_loss += criterion(output, target).data[0]
+        # get the index of the max log-probability
+        pred = output.data.max(1, keepdim=True)[1]
+        correct += pred.eq(target.data.view_as(pred)).cpu().sum()
+
+    train_loss = train_loss / (len(train_loader.dataset) // BATCH)
+    print('\nTrain set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(train_loss, correct, len(train_loader.dataset), 100. * correct / len(train_loader.dataset)))
+    log_value('train_acc', 100. * correct / len(train_loader.dataset), epoch)
+
 
 for epoch in range(1, EPOCH+1):
     train(epoch)
+    get_train_acc()
     test()
