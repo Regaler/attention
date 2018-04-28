@@ -115,9 +115,9 @@ class ResNet(nn.Module):
         self.avgpool = nn.AvgPool2d(4, stride=1)
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
-        self.se1 = SELayer(64 * 4, 16, True)
-        self.se2 = SELayer(128 * 4, 16, True)
-        self.se3 = SELayer(256 * 4, 16, True)
+        self.se1 = SELayer(64 * 4, 32, True)
+        self.se2 = SELayer(128 * 4, 64, True)
+        self.se3 = SELayer(256 * 4, 64, True)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):

@@ -27,6 +27,8 @@ train_loader = torch.utils.data.DataLoader(
 		transforms.RandomHorizontalFlip(),
 		transforms.ToTensor(),
 		transforms.Normalize((0.5071,0.4867,0.4408),(0.2675,0.2565,0.2761)),
+                #transforms.ColorJitter(0.1,0.1,0.1,0.1),
+                #transforms.RandomRotation(20)
             ])), batch_size=BATCH, shuffle=True, num_workers=4)
 
 # Test dataset
@@ -53,6 +55,8 @@ criterion = nn.CrossEntropyLoss()
 
 def train(epoch):
     model.train()
+    train_loss = 0
+    correct = 0
     optimizer = optim.SGD(model.parameters(), lr=config.learning_rate(0.1, epoch), momentum=0.9, weight_decay=5e-4)
     for batch_idx, (data, target) in enumerate(train_loader):
         if use_cuda:
@@ -68,8 +72,18 @@ def train(epoch):
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(epoch, batch_idx * len(data), len(train_loader.dataset), 100. * batch_idx / len(train_loader), loss.item()))
             log_value('loss', loss, 391*(epoch-1) + batch_idx)
 
+        # sum up batch loss
+        train_loss += criterion(output, target).item()
+        # get the index of the max log-probability
+        pred = output.data.max(1, keepdim=True)[1]
+        correct += pred.eq(target.data.view_as(pred)).cpu().sum()
+
     if epoch % 20 == 0:
         torch.save(model.module.state_dict(), OUTPATH + str(epoch))
+
+    train_loss = train_loss / (len(train_loader.dataset) // BATCH)
+    print('\nTrain set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(train_loss, correct, len(train_loader.dataset), 100. * correct / len(train_loader.dataset)))
+    log_value('train_acc', 100. * correct / len(train_loader.dataset), epoch)
 
 #
 # Test performance on CIFAR100
@@ -97,28 +111,7 @@ def test():
     log_value('test_loss', test_loss, epoch)
     log_value('test_acc', 100. * correct / len(test_loader.dataset), epoch)
 
-def get_train_acc():
-    model.eval()
-    train_loss = 0
-    correct = 0
-    for data, target in train_loader:
-        if use_cuda:
-            data, target = data.cuda(), target.cuda()
-        data, target = Variable(data, requires_grad=False), Variable(target)
-        output = model(data)
-
-        # sum up batch loss
-        train_loss += criterion(output, target).item()
-        # get the index of the max log-probability
-        pred = output.data.max(1, keepdim=True)[1]
-        correct += pred.eq(target.data.view_as(pred)).cpu().sum()
-
-    train_loss = train_loss / (len(train_loader.dataset) // BATCH)
-    print('\nTrain set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(train_loss, correct, len(train_loader.dataset), 100. * correct / len(train_loader.dataset)))
-    log_value('train_acc', 100. * correct / len(train_loader.dataset), epoch)
-
 
 for epoch in range(1, EPOCH+1):
     train(epoch)
-    get_train_acc()
     test()

@@ -113,9 +113,9 @@ class ResNet(nn.Module):
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
         # Spatial Attention Part
-        self.joint1 = JointLayer(256)
-        self.joint2 = JointLayer(512)
-        self.joint3 = JointLayer(1024)
+        self.joint1 = JointLayer(256,16)
+        self.joint2 = JointLayer(512,32)
+        self.joint3 = JointLayer(1024,64)
 
         # Initialization
         for m in self.modules():

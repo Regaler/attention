@@ -1,7 +1,7 @@
 from torch import nn
 
 class SELayer(nn.Module):
-    def __init__(self, channel, reduction=16, multiply=True):
+    def __init__(self, channel, reduction=64, multiply=True):
         super(SELayer, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.fc = nn.Sequential(
@@ -25,7 +25,7 @@ class STNLayer(nn.Module):
     def __init__(self, channel_in, multiply=True):
         super(STNLayer, self).__init__()
         c = channel_in
-        C = c//8
+        C = c//32
         self.multiply = multiply
         self.conv_in = nn.Conv2d(c, C, kernel_size=1)
         self.conv_out = nn.Conv2d(C, 1, kernel_size=1)
@@ -80,13 +80,14 @@ class STNLayer(nn.Module):
 
 
 class JointLayer(nn.Module):
-    def __init__(self, channel_in):
+    def __init__(self, channel_in, r):
         super(JointLayer, self).__init__()
         c = channel_in
-        self.se = SELayer(channel=c, reduction=16, multiply=False)
+        self.se = SELayer(channel=c, reduction=r, multiply=False)
         self.stn = STNLayer(channel_in=c, multiply=False)
         #self.activation = nn.Hardtanh(inplace=True)
-        self.activation = nn.ReLU(True)
+        #self.activation = nn.ReLU(True)
+        self.activation = nn.Sigmoid()
 
     def forward(self, x):
         y = self.se(x)
