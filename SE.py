@@ -40,6 +40,7 @@ test_loader = torch.utils.data.DataLoader(
 
 #model = Net()
 model = models.se_resnet.se_resnet50(num_classes=100)
+#model.load_state_dict(torch.load("./checkpoint/checkpoint_se200"))
 pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 print("SE: # of params: " + str(pytorch_total_params))
 

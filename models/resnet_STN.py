@@ -144,6 +144,7 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        #torch.save(x,'./STN_stage0.pkl')
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -152,6 +153,7 @@ class ResNet(nn.Module):
         x = self.layer1(x)
         #print("After1: x.shape: " + str(x.shape))
         x = self.STN1(x)
+        #torch.save(y,'./STN_stage1.pkl')
         x = self.layer2(x)
         #print("After2: x.shape: " + str(x.shape))
         x = self.STN2(x)

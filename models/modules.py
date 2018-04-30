@@ -1,4 +1,5 @@
 from torch import nn
+import torch
 
 class SELayer(nn.Module):
     def __init__(self, channel, reduction=64, multiply=True):
@@ -73,6 +74,7 @@ class STNLayer(nn.Module):
         y = self.ReLU4(y)
 
         y = self.conv_out(y)
+        #torch.save(y,'./STN_stage1.pkl')
         if self.multiply == True:
             return x * y
         else:
@@ -87,7 +89,7 @@ class JointLayer(nn.Module):
         self.stn = STNLayer(channel_in=c, multiply=False)
         #self.activation = nn.Hardtanh(inplace=True)
         #self.activation = nn.ReLU(True)
-        self.activation = nn.Sigmoid()
+
 
     def forward(self, x):
         y = self.se(x)

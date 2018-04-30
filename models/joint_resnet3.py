@@ -113,8 +113,8 @@ class ResNet(nn.Module):
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
         # Spatial Attention Part
-        self.joint1 = JointLayer(256,16)
-        self.joint2 = JointLayer(512,32)
+        #self.joint1 = JointLayer(256,16)
+        #self.joint2 = JointLayer(512,32)
         self.joint3 = JointLayer(1024,64)
 
         # Initialization
@@ -152,14 +152,11 @@ class ResNet(nn.Module):
         #x = self.maxpool(x)
 
         x = self.layer1(x)
-        x = self.joint1(x)
-        #torch.save(x,'./stage1.pkl')
+        #x = self.joint1(x)
         x = self.layer2(x)
-        x = self.joint2(x)
-        #torch.save(x,'./stage2.pkl')
+        #x = self.joint2(x)
         x = self.layer3(x)
         x = self.joint3(x)
-        #torch.save(x,'./stage3.pkl')
         x = self.layer4(x)
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)

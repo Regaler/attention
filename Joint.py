@@ -28,8 +28,6 @@ train_loader = torch.utils.data.DataLoader(
 		transforms.RandomHorizontalFlip(),
 		transforms.ToTensor(),
 		transforms.Normalize((0.5071,0.4867,0.4408),(0.2675,0.2565,0.2761)),
-                #transforms.ColorJitter(0.1,0.1,0.1,0.1),
-                #transforms.RandomRotation(20)
             ])), batch_size=BATCH, shuffle=True, num_workers=4)
 
 # Test dataset
@@ -41,7 +39,7 @@ test_loader = torch.utils.data.DataLoader(
 
 #model = Net()
 model = models.joint_resnet.resnet50(num_classes=100)
-#model.load_state_dict(torch.load("./checkpoint/checkpoint_joint40"))
+model.load_state_dict(torch.load("./checkpoint/checkpoint_joint200"))
 pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 print("Joint: # of params: " + str(pytorch_total_params))
 
@@ -64,6 +62,8 @@ def train(epoch):
             data, target = data.cuda(), target.cuda()
 
         data, target = Variable(data), Variable(target)
+        if batch_idx == 0:
+            torch.save(data, './data.pkl')
         optimizer.zero_grad()
         output = model(data)
         loss = criterion(output, target)
@@ -115,5 +115,4 @@ def test():
 
 for epoch in range(1, EPOCH+1):
     train(epoch)
-    #get_train_acc()
     test()

@@ -114,8 +114,8 @@ class ResNet(nn.Module):
 
         # Spatial Attention Part
         self.joint1 = JointLayer(256,16)
-        self.joint2 = JointLayer(512,32)
-        self.joint3 = JointLayer(1024,64)
+        #self.joint2 = JointLayer(512,32)
+        #self.joint3 = JointLayer(1024,64)
 
         # Initialization
         for m in self.modules():
@@ -153,13 +153,10 @@ class ResNet(nn.Module):
 
         x = self.layer1(x)
         x = self.joint1(x)
-        #torch.save(x,'./stage1.pkl')
         x = self.layer2(x)
-        x = self.joint2(x)
-        #torch.save(x,'./stage2.pkl')
+        #x = self.joint2(x)
         x = self.layer3(x)
-        x = self.joint3(x)
-        #torch.save(x,'./stage3.pkl')
+        #x = self.joint3(x)
         x = self.layer4(x)
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
