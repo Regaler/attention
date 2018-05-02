@@ -1,0 +1,6 @@
+python main.py --image-path ./samples/test_11.png --arch 'se_resnet' --topk 1 --target-layer 'layer1'
+python main.py --image-path ./samples/test_11.png --arch 'se_resnet' --topk 1 --target-layer 'se1'
+python main.py --image-path ./samples/test_11.png --arch 'se_resnet' --topk 1 --target-layer 'layer2'
+python main.py --image-path ./samples/test_11.png --arch 'se_resnet' --topk 1 --target-layer 'se2'
+python main.py --image-path ./samples/test_11.png --arch 'se_resnet' --topk 1 --target-layer 'layer3'
+python main.py --image-path ./samples/test_11.png --arch 'se_resnet' --topk 1 --target-layer 'se3'
