@@ -39,11 +39,11 @@ test_loader = torch.utils.data.DataLoader(
 
 #model = Net()
 model = models.resnet_STN.resnet50(num_classes=100)
-model.load_state_dict(torch.load("./checkpoint/checkpoint_STN200"))
-pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-print("STN: # of params: " + str(pytorch_total_params))
-for module in model.named_modules():
-    print(module[0])
+#model.load_state_dict(torch.load("./checkpoint/checkpoint_STN200"))
+#pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+#print("STN: # of params: " + str(pytorch_total_params))
+#for module in model.named_modules():
+#    print(module[0])
 
 if use_cuda:
     model.cuda()
@@ -115,8 +115,8 @@ def test():
     log_value('test_acc', 100. * correct / len(test_loader.dataset), epoch)
 
 
-#for epoch in range(1, EPOCH+1):
-    #train(epoch)
-    #test()
-epoch = 1
-test()
+for epoch in range(1, EPOCH+1):
+    train(epoch)
+    test()
+#epoch = 1
+#test()

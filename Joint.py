@@ -39,9 +39,9 @@ test_loader = torch.utils.data.DataLoader(
 
 #model = Net()
 model = models.joint_resnet.resnet50(num_classes=100)
-model.load_state_dict(torch.load("./checkpoint/checkpoint_joint200"))
-pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-print("Joint: # of params: " + str(pytorch_total_params))
+#model.load_state_dict(torch.load("./checkpoint/checkpoint_joint200"))
+#pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+#print("Joint: # of params: " + str(pytorch_total_params))
 
 if use_cuda:
     model.cuda()
